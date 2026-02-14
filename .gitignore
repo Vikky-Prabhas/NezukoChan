@@ -1,22 +1,44 @@
-# User requested to ignore CI workflows
-.github/workflows/ci.yml
+# Dependencies
+node_modules/
 
-# Standard ignores
-node_modules
-.next
-.DS_Store
-dist
-out
-build
-coverage
-test-results
-.vscode
-.idea
+# Build output
+dist/
+dist-ssr/
+build/
+out/
+
+# Rust/Tauri
+src-tauri/target/
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Custom user ignores
-dummy_comp/
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.local
+
+# Debug files
 src-tauri/src/debug_*.html
 src-tauri/src/debug_*.js
 src-tauri/src/debug_*.json
-src-tauri/target/
+
+# Old nested folder (deprecated)
+tauri-app/
+
+# Coverage & testing
+coverage/
+test-results/

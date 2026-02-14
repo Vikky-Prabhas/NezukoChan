@@ -1,3 +1,0 @@
-{
-    "query": "query { shows(search: {query: \"Naruto\"}, limit: 5, page: 1, translationType: sub, countryOrigin: ALL) { edges { _id name availableEpisodes } } }"
-}
