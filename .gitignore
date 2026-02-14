@@ -1,0 +1,22 @@
+# User requested to ignore CI workflows
+.github/workflows/ci.yml
+
+# Standard ignores
+node_modules
+.next
+.DS_Store
+dist
+out
+build
+coverage
+test-results
+.vscode
+.idea
+*.log
+
+# Custom user ignores
+dummy_comp/
+src-tauri/src/debug_*.html
+src-tauri/src/debug_*.js
+src-tauri/src/debug_*.json
+src-tauri/target/

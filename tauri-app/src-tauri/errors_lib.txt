@@ -1,0 +1,156 @@
+﻿cargo : warning: unused import: 
+`std::sync::Arc`
+At line:1 char:1
++ cargo check --lib > 
+errors_lib_raw.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : NotSpeci 
+   fied: (warning: unused import: `st  
+  d::sync::Arc`:String) [], RemoteEx   
+ ception
+    + FullyQualifiedErrorId : NativeCo 
+   mmandError
+ 
+ --> src\lib.rs:1:5
+  |
+1 | use std::sync::Arc;
+  |     ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` 
+(part of `#[warn(unused)]`) on by 
+default
+
+warning: unused import: 
+`tauri::Manager`
+ --> src\lib.rs:2:5
+  |
+2 | use tauri::Manager;
+  |     ^^^^^^^^^^^^^^
+
+warning: unused import: `regex::Regex`
+ --> src\anime.rs:6:5
+  |
+6 | use regex::Regex;
+  |     ^^^^^^^^^^^^
+
+warning: unused import: 
+`serde_json::json`
+ --> src\anime.rs:7:5
+  |
+7 | use serde_json::json; // Added for 
+proxy headers
+  |     ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `gogaes` and 
+`unpacker`
+ --> src\anime.rs:8:25
+  |
+8 | use crate::extractors::{gogaes, 
+unpacker, allanime, hianime};
+  |                         ^^^^^^  
+^^^^^^^^
+
+warning: unused import: 
+`futures::future::join_all`
+ --> src\anime.rs:9:5
+  |
+9 | use futures::future::join_all;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Serialize`
+ --> src\extractors\allanime.rs:2:26
+  |
+2 | use serde::{Deserialize, 
+Serialize};
+  |                          ^^^^^^^^^
+
+warning: unused imports: `AudioTrack`, 
+`Episode`, `SubtitleTrack`, and 
+`VideoSource`
+ --> src\extractors\allanime.rs:4:20
+  |
+4 | use crate::anime::{Episode, 
+VideoSource, SubtitleTrack, 
+AudioTrack}; // Adjust imports based 
+on your project structure
+  |                    ^^^^^^^  
+^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^
+
+warning: use of deprecated function 
+`base64::decode`: Use Engine::decode
+  --> src\extractors\gogaes.rs:12:35
+   |
+12 |     let encrypted_bytes = 
+base64::decode(encrypted_base64.trim())
+   |                                   
+^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by 
+default
+
+warning: unused variable: `anime_id`
+   --> src\anime.rs:296:31
+    |
+296 | pub async fn 
+get_awi_episodes(anime_id: &str) -> 
+Result<Vec<Episode>, String> {
+    |                               
+^^^^^^^^ help: if this is intentional, 
+prefix it with an underscore: 
+`_anime_id`
+    |
+    = note: 
+`#[warn(unused_variables)]` (part of 
+`#[warn(unused)]`) on by default
+
+warning: unused variable: `episode_id`
+   --> src\anime.rs:554:29
+    |
+554 | pub async fn 
+get_awi_stream(episode_id: &str) -> 
+Result<VideoSource, String> {
+    |                             
+^^^^^^^^^^ help: if this is 
+intentional, prefix it with an 
+underscore: `_episode_id`
+
+warning: field `errors` is never read
+  --> src\extractors\allanime.rs:33:5
+   |
+31 | struct SearchResponse {
+   |        -------------- field in 
+this struct
+32 |     data: Option<SearchData>,
+33 |     errors: 
+Option<Vec<serde_json::Value>>,
+   |     ^^^^^^
+   |
+   = note: `SearchResponse` has a 
+derived impl for the trait `Debug`, 
+but this is intentionally ignored 
+during dead code analysis
+   = note: `#[warn(dead_code)]` (part 
+of `#[warn(unused)]`) on by default
+
+warning: field `raw` is never read
+  --> src\extractors\allanime.rs:66:5
+   |
+63 | struct AvailableEpisodesDetail {
+   |        ----------------------- 
+field in this struct
+...
+66 |     raw: Option<Vec<String>>,
+   |     ^^^
+   |
+   = note: `AvailableEpisodesDetail` 
+has a derived impl for the trait 
+`Debug`, but this is intentionally 
+ignored during dead code analysis
+
+warning: `tauri-app` (lib) generated 
+13 warnings (run `cargo fix --lib -p 
+tauri-app` to apply 10 suggestions)
+    Finished `dev` profile 
+[unoptimized + debuginfo] target(s) in 
+0.37s
