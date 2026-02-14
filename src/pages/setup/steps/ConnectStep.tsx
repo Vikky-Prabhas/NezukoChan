@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
+import { AniListAuth } from "../../../services/anilistAuth";
+import { GDriveService } from "../../../services/gdriveAuth";
+import type { AniListUser } from "../../../hooks/useSetup";
 
 interface ConnectStepProps {
     connectedAniList: boolean;
     connectedGDrive: boolean;
-    onUpdate: (data: { connectedAniList: boolean; connectedGDrive: boolean }) => void;
+    onUpdate: (data: {
+        connectedAniList: boolean;
+        connectedGDrive: boolean;
+        anilistUser?: AniListUser | null;
+        gdriveToken?: string | null;
+    }) => void;
     onNext: () => void;
     onBack: () => void;
 }
@@ -13,39 +21,69 @@ export default function ConnectStep({ connectedAniList, connectedGDrive, onUpdat
     const [gdrive, setGdrive] = useState(connectedGDrive);
     const [show, setShow] = useState(false);
     const [connecting, setConnecting] = useState<"anilist" | "gdrive" | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
+    // Check if returning from AniList OAuth (token might already be saved)
     useEffect(() => {
         const timer = setTimeout(() => setShow(true), 100);
+
+        // Check if AniList is already connected via token
+        if (!anilist && AniListAuth.isAuthenticated()) {
+            setAnilist(true);
+            onUpdate({ connectedAniList: true, connectedGDrive: gdrive });
+        }
+        // Check if GDrive is already connected via token
+        if (!gdrive && GDriveService.isAuthenticated()) {
+            setGdrive(true);
+            onUpdate({ connectedAniList: anilist, connectedGDrive: true });
+        }
+
         return () => clearTimeout(timer);
     }, []);
 
-    const handleConnectAniList = async () => {
-        setConnecting("anilist");
-        // TODO: Implement real AniList OAuth flow
-        // For now, simulate a connection with a brief delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setAnilist(true);
-        setConnecting(null);
-        onUpdate({ connectedAniList: true, connectedGDrive: gdrive });
+    const handleConnectAniList = () => {
+        setError(null);
+        // Redirect to AniList OAuth — this navigates AWAY from the app.
+        // The callback page (/auth/anilist/callback) will handle the redirect back.
+        window.location.href = AniListAuth.getAuthUrl();
     };
 
     const handleConnectGDrive = async () => {
         setConnecting("gdrive");
-        // TODO: Implement real Google Drive OAuth flow
-        // For now, simulate a connection with a brief delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setGdrive(true);
-        setConnecting(null);
-        onUpdate({ connectedAniList: anilist, connectedGDrive: true });
+        setError(null);
+        try {
+            const token = await GDriveService.requestAccess();
+            setGdrive(true);
+            setConnecting(null);
+            onUpdate({
+                connectedAniList: anilist,
+                connectedGDrive: true,
+                gdriveToken: token,
+            });
+        } catch (err) {
+            console.error("[ConnectStep] GDrive auth failed:", err);
+            setError(err instanceof Error ? err.message : "Google Drive connection failed");
+            setConnecting(null);
+        }
     };
 
     const handleDisconnect = (service: "anilist" | "gdrive") => {
         if (service === "anilist") {
+            AniListAuth.clearToken();
             setAnilist(false);
-            onUpdate({ connectedAniList: false, connectedGDrive: gdrive });
+            onUpdate({
+                connectedAniList: false,
+                connectedGDrive: gdrive,
+                anilistUser: null,
+            });
         } else {
+            GDriveService.clearToken();
             setGdrive(false);
-            onUpdate({ connectedAniList: anilist, connectedGDrive: false });
+            onUpdate({
+                connectedAniList: anilist,
+                connectedGDrive: false,
+                gdriveToken: null,
+            });
         }
     };
 
@@ -80,6 +118,16 @@ export default function ConnectStep({ connectedAniList, connectedGDrive, onUpdat
                     <p className="text-white/40 text-sm">Connect your accounts for the best experience</p>
                 </div>
 
+                {/* Error Banner */}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300 text-sm flex items-center gap-2">
+                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        {error}
+                    </div>
+                )}
+
                 {/* AniList Card */}
                 <div className="mb-4 p-5 bg-white/[0.03] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
                     <div className="flex items-start gap-4">
@@ -110,17 +158,9 @@ export default function ConnectStep({ connectedAniList, connectedGDrive, onUpdat
                             ) : (
                                 <button
                                     onClick={handleConnectAniList}
-                                    disabled={connecting === "anilist"}
-                                    className="px-5 py-2.5 bg-blue-500/15 border border-blue-500/25 rounded-lg text-blue-300 text-sm font-medium hover:bg-blue-500/20 hover:border-blue-500/35 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-5 py-2.5 bg-blue-500/15 border border-blue-500/25 rounded-lg text-blue-300 text-sm font-medium hover:bg-blue-500/20 hover:border-blue-500/35 transition-all cursor-pointer flex items-center gap-2"
                                 >
-                                    {connecting === "anilist" ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
-                                            Connecting...
-                                        </>
-                                    ) : (
-                                        "Connect AniList"
-                                    )}
+                                    Connect AniList ↗
                                 </button>
                             )}
                         </div>

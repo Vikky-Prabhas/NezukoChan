@@ -1,5 +1,11 @@
 import { useState, useCallback } from "react";
 
+export interface AniListUser {
+    id: number;
+    name: string;
+    avatar: string | null;
+}
+
 export interface SetupData {
     displayName: string;
     avatarIndex: number;
@@ -10,6 +16,10 @@ export interface SetupData {
     contentMode: "anime" | "cartoon" | "both";
     setupComplete: boolean;
     setupCompletedAt: string | null;
+    // OAuth tokens
+    anilistToken: string | null;
+    anilistUser: AniListUser | null;
+    gdriveToken: string | null;
 }
 
 const STORAGE_KEY = "nezuko_setup";
@@ -24,6 +34,9 @@ const defaultSetup: SetupData = {
     contentMode: "anime",
     setupComplete: false,
     setupCompletedAt: null,
+    anilistToken: null,
+    anilistUser: null,
+    gdriveToken: null,
 };
 
 function loadSetup(): SetupData {
@@ -91,4 +104,9 @@ export function isSetupComplete(): boolean {
         // ignore
     }
     return false;
+}
+
+/** Read setup data outside of React (for service layer) */
+export function getSetupData(): SetupData {
+    return loadSetup();
 }

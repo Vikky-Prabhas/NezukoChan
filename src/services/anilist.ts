@@ -1,5 +1,7 @@
 import type { AnimeMedia, CatalogFilters } from "../types";
 import { fetch } from '../lib/tauri';
+import { getSetupData } from '../hooks/useSetup';
+import { getToken } from './anilistAuth';
 
 const API = "https://graphql.anilist.co";
 
@@ -92,9 +94,19 @@ async function query<T>(gql: string, variables: Record<string, unknown> = {}, re
   return fetchWithQueue(async () => {
     for (let i = 0; i < retries; i++) {
       try {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        };
+        // Attach AniList auth token if available
+        const token = getToken();
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const res = await fetch(API, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          headers,
           body: JSON.stringify({ query: gql, variables }),
         });
 
@@ -132,32 +144,41 @@ function stripHtml(html: string | null): string {
   return html.replace(/<br\s*\/?>/g, " ").replace(/<[^>]*>/g, "");
 }
 
+// ─── isAdult Helper (reads age gate from setup wizard) ─────────
+function allowAdult(): boolean {
+  try { return getSetupData().isAdult; } catch { return false; }
+}
+
 // ─── Public API ───────────────────────────────────
 export const AnilistService = {
 
   async getTrending(page = 1, perPage = 20): Promise<AnimeMedia[]> {
+    const isAdult = allowAdult();
     const data = await query<{ Page: { media: AnimeMedia[] } }>(`
-query($page: Int, $perPage: Int){ Page(page: $page, perPage: $perPage){ media(sort: TRENDING_DESC, type: ANIME, isAdult: false){${MEDIA_FIELDS} } } }
-`, { page, perPage });
+query($page: Int, $perPage: Int, $isAdult: Boolean){ Page(page: $page, perPage: $perPage){ media(sort: TRENDING_DESC, type: ANIME, isAdult: $isAdult){${MEDIA_FIELDS} } } }
+`, { page, perPage, isAdult });
     return data.Page.media;
   },
 
   async getPopular(page = 1, perPage = 20): Promise<AnimeMedia[]> {
+    const isAdult = allowAdult();
     const data = await query<{ Page: { media: AnimeMedia[] } }>(`
-query($page: Int, $perPage: Int){ Page(page: $page, perPage: $perPage){ media(sort: POPULARITY_DESC, type: ANIME, isAdult: false){${MEDIA_FIELDS} } } }
-`, { page, perPage });
+query($page: Int, $perPage: Int, $isAdult: Boolean){ Page(page: $page, perPage: $perPage){ media(sort: POPULARITY_DESC, type: ANIME, isAdult: $isAdult){${MEDIA_FIELDS} } } }
+`, { page, perPage, isAdult });
     return data.Page.media;
   },
 
   async getTopRated(page = 1, perPage = 20): Promise<AnimeMedia[]> {
+    const isAdult = allowAdult();
     const data = await query<{ Page: { media: AnimeMedia[] } }>(`
-query($page: Int, $perPage: Int){ Page(page: $page, perPage: $perPage){ media(sort: SCORE_DESC, type: ANIME, isAdult: false){${MEDIA_FIELDS} } } }
-`, { page, perPage });
+query($page: Int, $perPage: Int, $isAdult: Boolean){ Page(page: $page, perPage: $perPage){ media(sort: SCORE_DESC, type: ANIME, isAdult: $isAdult){${MEDIA_FIELDS} } } }
+`, { page, perPage, isAdult });
     return data.Page.media;
   },
 
   async searchAnime(filters: CatalogFilters, page = 1, perPage = 24): Promise<{ media: AnimeMedia[]; hasNext: boolean }> {
-    const vars: Record<string, unknown> = { page, perPage, type: "ANIME", isAdult: false };
+    const isAdult = allowAdult();
+    const vars: Record<string, unknown> = { page, perPage, type: "ANIME", isAdult };
     const argDefs: string[] = ["$page:Int", "$perPage:Int", "$type:MediaType", "$isAdult:Boolean"];
     const argUses: string[] = ["type:$type", "isAdult:$isAdult"];
 

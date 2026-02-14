@@ -5,6 +5,7 @@ import { isSetupComplete } from "./hooks/useSetup";
 
 // Lazy-loaded pages for code splitting
 const SetupWizard = lazy(() => import("./pages/setup/SetupWizard"));
+const AniListCallback = lazy(() => import("./pages/auth/AniListCallback"));
 const Home = lazy(() => import("./pages/home/Home"));
 const Catalog = lazy(() => import("./pages/catalog/Catalog"));
 const News = lazy(() => import("./pages/news/News"));
@@ -43,6 +44,9 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
+          {/* OAuth Callbacks — no guards, must be accessible at all times */}
+          <Route path="/auth/anilist/callback" element={<AniListCallback />} />
+
           {/* Setup Wizard — no Layout wrapper, fullscreen */}
           <Route
             path="/setup"
