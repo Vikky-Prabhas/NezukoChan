@@ -52,7 +52,7 @@ export default function GenreStep({ preferredGenres, onUpdate, onNext, onBack }:
     };
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
+        <div className="relative w-full h-screen overflow-hidden flex items-center justify-center">
             {/* Background */}
             <div className="absolute inset-0 opacity-10"
                 style={{
