@@ -132,6 +132,9 @@ export default function SetupWizard() {
                 boxShadow: "inset 0 0 150px 60px rgba(0, 0, 0, 0.7)",
             }} />
 
+            {/* Subtle overall dark tint for better center readability */}
+            <div className="absolute inset-0 bg-black/30 pointer-events-none z-[1]" />
+
             {/* ============ STEP CONTENT (transparent bg, renders on top) ============ */}
             <div
                 key={currentStep}
