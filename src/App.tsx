@@ -1,8 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Layout from "./components/layout/Layout";
+import { isSetupComplete } from "./hooks/useSetup";
 
 // Lazy-loaded pages for code splitting
+const SetupWizard = lazy(() => import("./pages/setup/SetupWizard"));
 const Home = lazy(() => import("./pages/home/Home"));
 const Catalog = lazy(() => import("./pages/catalog/Catalog"));
 const News = lazy(() => import("./pages/news/News"));
@@ -20,12 +22,45 @@ function PageLoader() {
   );
 }
 
+/** Guard: redirects to /setup if wizard hasn't been completed */
+function RequireSetup({ children }: { children: React.ReactNode }) {
+  if (!isSetupComplete()) {
+    return <Navigate to="/setup" replace />;
+  }
+  return <>{children}</>;
+}
+
+/** Guard: redirects to / if wizard is already done */
+function RedirectIfSetupDone({ children }: { children: React.ReactNode }) {
+  if (isSetupComplete()) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route element={<Layout />}>
+          {/* Setup Wizard — no Layout wrapper, fullscreen */}
+          <Route
+            path="/setup"
+            element={
+              <RedirectIfSetupDone>
+                <SetupWizard />
+              </RedirectIfSetupDone>
+            }
+          />
+
+          {/* Main App — requires setup completion */}
+          <Route
+            element={
+              <RequireSetup>
+                <Layout />
+              </RequireSetup>
+            }
+          >
             <Route path="/" element={<Home />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/news" element={<News />} />
